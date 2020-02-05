@@ -1,0 +1,144 @@
+# Default values for redis-stunnel.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: acidozik/redis-tls 
+  tag: latest
+  pullPolicy: Always 
+
+nameOverride: "redis-stunnel"
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 6379
+
+config:
+  listen: 0.0.0.0
+  portListen: 6379
+  connect: redis-headless.redis.svc.cluster.local 
+  portConnect: 6380
+
+ssl:
+  secret: stunnel-ssl-certs
+  certificates:
+    cert: |-
+      -----BEGIN CERTIFICATE-----
+      MIIFQTCCAymgAwIBAgIJAIV0mQbVXTgjMA0GCSqGSIb3DQEBCwUAMH8xCzAJBgNV
+      BAYTAkNBMQ8wDQYDVQQIDAZRdWViZWMxETAPBgNVBAcMCE1vbnRyZWFsMQwwCgYD
+      VQQKDANUREYxDzANBgNVBAsMBkRldk9wczEtMCsGA1UEAwwkcmVkaXMtbWFzdGVy
+      LnJlZGlzLnN2Yy5jbHVzdGVyLmxvY2FsMB4XDTIwMDIwNDE0NTQ1M1oXDTMwMDIw
+      MTE0NTQ1M1owLDEqMCgGA1UEAwwhRGFuaWVsLUJlcnViZW5zLU1hY0Jvb2stUHJv
+      LmxvY2FsMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAwImz7NdKyGqi
+      4K/NFo5lR85UkLDSCMnZM142NdaabFlVvD9Uwi+7PVSDZCBwR34Hb8Gt7lRj87xn
+      Y49tZjv+nszqjtt66RSFBD6Z6AtUKnh9FUq9FQG2bRrjXd0Ea4X1Lc39d0lrTrn8
+      Dn5P8gmF9t0qsiWtoAbg+hi2jhA0piMDTLHJYBAauZp/zFb2VNjSoLJKWU2Z9a4r
+      sJecphhB+cniiNMbwmvsC3Gc9TMuz7zust/sS2NvtpWjtgy25zuy4HXgzXflGUsL
+      QlK+3IfLt3wIW/Z0wl2NLPUfqICbxwkvXW2Z2QX7j2blXkt3AkcaeVD2AQhsY4mA
+      ebuxnlCNQN2tJvDOX80qt54iggl9jBj/ihXlCLuL+ut1kvhOKmNQ63ZQr4/YhcWs
+      jGQ0IUudOcsy8aPuoIs2pslTNvv8PvjhzLXmD5UwD8Z4JeaQ8QZBwgvY4kxzgBqb
+      3yOmd5F+7yVUjXknE0eV5yliVCjR/cXDqfM8r2YBvZDCratfalkZ2kQe8E929Z6s
+      RIoJ0A5WSXnmrzeiC3Z0asWw9hdvdwFY/i8pVYX2AxsvqcoE4wGD1zW4uU17gBp3
+      vnpcRQRHSFG2wzirco+6vidJZW4JWf0xEEL1W8Zgxmh7Ttz3Nglj1UuYlDY+qzd/
+      EegOuCA1sZMxxdXurjDM/Cm6cy00CoUCAwEAAaMTMBEwDwYDVR0RBAgwBocEfwAA
+      ATANBgkqhkiG9w0BAQsFAAOCAgEAM/n9aSFEDAZwvJ2ONSrUs196fWrUjb/74aO1
+      NEEAXGCxUVXyNoxx6pi/USsQowEBYoAz37HYJ406zxdMZNRSAlS5bv1SEf6M8dqX
+      I6JzRHm5iPETbQ11sQZNCtiiPIpCb0JDqReCMu3wwd1zHsZzN+qn4sa18cd8b1By
+      T0vtvjkiQ+viKIfwOjoOg+WzXz4sO37hRcwA8ugfe46EDfN+bu3SaBJneMsJccOG
+      tIa3QGTs56kJLKgYpvpZ2ZEszXMxUY+tACqClh2b/Al97D/ZIayX58j74SeRyrGf
+      9qVXp028C0plgp8woeyLZsEOLD1kGL/HwOPD8A9MO5uy9sbKyFc+q6ZruZZVqB7b
+      2vNec2y4i2LEDjX+xkVjTgfyl7H2nsUR+JxPEKHlZpc64BhR+0AbU2LRLxvL68Jd
+      vW5PDdeB6f1AFSNdVl5BUB210pFcGK1XMBz/EwbnMOojvpIE+eHdb8ayfmYBU+ah
+      jWkmtSl9cwM8W9pFxecFXiFWfoawi4PcFTAByCHPIOn2gCzG2G+MQfvRxjWiXkJ/
+      srIfykHh7wrIYfK/7ZcFOkzC9Gi7HKD0H9rHTrOrhnlHVaCWN7Z5f0cTw3xRzE2v
+      e9dyI+M6XWy2V877ESjWeIJL8BqAy6wTAdzRN3CdNaFCQ9UAfjuPnKyOW4w7Jbkr
+      ZSZkgP0=
+      -----END CERTIFICATE-----
+
+    key: |-
+      -----BEGIN RSA PRIVATE KEY-----
+      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
+      -----END RSA PRIVATE KEY-----
+
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  path: /
+  hosts:
+    - chart-example.local
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
