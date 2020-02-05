@@ -1,1 +1,1 @@
-# redis-stunnel
+redis stunnel proxy helm chart
