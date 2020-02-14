@@ -1,0 +1,39 @@
+{{- if not .Values.sentinel.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "redis.fullname" . }}-master
+  labels:
+    app: {{ template "redis.name" . }}
+    chart: {{ template "redis.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+{{- if .Values.master.service.annotations }}
+  annotations: {{ toYaml .Values.master.service.annotations | nindent 4 }}
+{{- end }}
+spec:
+  type: {{ .Values.master.service.type }}
+  {{ if eq .Values.master.service.type "LoadBalancer" -}} {{ if .Values.master.service.loadBalancerIP -}}
+  loadBalancerIP: {{ .Values.master.service.loadBalancerIP }}
+  {{ end -}}
+  {{- end -}}
+  ports:
+    {{- if not .Values.stunnel.enabled }}
+    - name: redis
+      port: {{ .Values.master.service.port }}
+      targetPort: 6380
+      {{- if .Values.master.service.nodePort }}
+      nodePort: {{ .Values.master.service.nodePort }}
+      {{- end }}
+    {{- end }}
+    {{- if .Values.stunnel.enabled }}
+    - name: redis-stunnel
+      port: {{ .Values.master.service.port }}
+      targetPort: 6379
+      protocol: TCP
+    {{- end }}
+  selector:
+    app: {{ template "redis.name" . }}
+    release: {{ .Release.Name }}
+    role: master
+{{- end }}

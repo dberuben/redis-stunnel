@@ -1,0 +1,24 @@
+{{- if .Values.stunnel.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-stunnel-config
+  labels:
+    app: {{ template "redis.name" . }}
+    chart: {{ template "redis.chart" . }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+data:
+  stunnel.conf: |-
+    fips = no
+    foreground = yes
+    debug = 4
+    delay = yes
+    socket = l:TCP_NODELAY=1
+    socket = r:TCP_NODELAY=1
+    [redis]
+    accept = {{ .Values.config.listen }}:{{ .Values.config.portListen }}
+    connect = {{ .Values.config.connect }}:{{ .Values.config.portConnect }}
+    cert = /certs/cert.pem
+    key = /certs/key.pem
+{{- end }}

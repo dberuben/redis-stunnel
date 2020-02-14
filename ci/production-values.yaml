@@ -6,7 +6,6 @@
 #   imageRegistry: myRegistryName
 #   imagePullSecrets:
 #     - myRegistryKeySecretName
-#   storageClass: myStorageClass
 
 ## Bitnami Redis image version
 ## ref: https://hub.docker.com/r/bitnami/redis/tags/
@@ -17,12 +16,12 @@ image:
   ## Bitnami Redis image tag
   ## ref: https://github.com/bitnami/bitnami-docker-redis#supported-tags-and-respective-dockerfile-links
   ##
-  tag: 5.0.5-debian-9-r141
+  tag: 5.0.5-debian-9-r36
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
   ##
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   ## Optionally specify an array of imagePullSecrets.
   ## Secrets must be manually created in the namespace.
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
@@ -30,18 +29,16 @@ image:
   # pullSecrets:
   #   - myRegistryKeySecretName
 
-## String to partially override redis.fullname template (will maintain the release name)
-##
-# nameOverride:
-
-## String to fully override redis.fullname template
-##
-# fullnameOverride:
+## Redis pod Security Context
+securityContext:
+  enabled: true
+  fsGroup: 1001
+  runAsUser: 1001
 
 ## Cluster settings
 cluster:
   enabled: true
-  slaveCount: 1
+  slaveCount: 3
 
 ## Use redis sentinel in the redis pod. This will disable the master and slave services and
 ## create one redis service with ports to the sentinel and the redis instances
@@ -56,7 +53,7 @@ sentinel:
     ## Bitnami Redis image tag
     ## ref: https://github.com/bitnami/bitnami-docker-redis-sentinel#supported-tags-and-respective-dockerfile-links
     ##
-    tag: 5.0.5-debian-9-r134
+    tag: 5.0.5-debian-9-r37
     ## Specify a imagePullPolicy
     ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
     ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -75,10 +72,6 @@ sentinel:
   failoverTimeout: 18000
   parallelSyncs: 1
   port: 26379
-  ## Additional Redis configuration for the sentinel nodes
-  ## ref: https://redis.io/topics/config
-  ##
-  configmap:
   ## Configure extra options for Redis Sentinel liveness and readiness probes
   ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes)
   ##
@@ -107,7 +100,7 @@ sentinel:
     ##  Redis Sentinel Service type
     type: ClusterIP
     sentinelPort: 26379
-    #redisPort: 6379
+    redisPort: 6379
 
     ## Specify the nodePort value for the LoadBalancer and NodePort service types.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
@@ -122,14 +115,10 @@ sentinel:
     annotations: {}
     loadBalancerIP:
 
-## Specifies the Kubernetes Cluster's Domain Name.
-##
-clusterDomain: cluster.local
-
 networkPolicy:
   ## Specifies whether a NetworkPolicy should be created
   ##
-  enabled: false
+  enabled: true
 
   ## The Policy model to apply. When set to false, only pods with the correct
   ## client label will have network access to the port Redis is listening
@@ -164,11 +153,6 @@ rbac:
     #      - gce.unprivileged
     rules: []
 
-## Redis pod Security Context
-securityContext:
-  enabled: true
-  fsGroup: 1001
-  runAsUser: 1001
 
 ## Use password authentication
 usePassword: true
@@ -176,15 +160,14 @@ usePassword: true
 ## Defaults to a random 10-character alphanumeric string if not set and usePassword is true
 ## ref: https://github.com/bitnami/bitnami-docker-redis#setting-the-server-password-on-first-run
 ##
-#password:
-
+password:
 ## Use existing secret (ignores previous password)
 # existingSecret:
 
 ## Mount secrets as files instead of environment variables
 usePasswordFile: false
 
-## Persist data to a persistent volume (Redis Master)
+## Persist data to a persistent volume
 persistence: {}
   ## A manually managed Persistent Volume and Claim
   ## Requires persistence.enabled: true
@@ -192,14 +175,7 @@ persistence: {}
   # existingClaim:
 
 # Redis port
-redisPort: 6380
-
-##
-## Stunnel Configuration
-##
-
-stunnel:
-  enabled: true
+redisPort: 6379
 
 ##
 ## Redis Master parameters
@@ -210,10 +186,6 @@ master:
   ## Can be used to specify command line arguments, for example:
   ##
   command: "/run.sh"
-  ## Additional Redis configuration for the master nodes
-  ## ref: https://redis.io/topics/config
-  ##
-  configmap:
   ## Redis additional command line flags
   ##
   ## Can be used to specify command line flags, for example:
@@ -230,7 +202,7 @@ master:
   ##
   disableCommands:
   - FLUSHDB
-  # - FLUSHALL
+  - FLUSHALL
 
   ## Redis Master additional pod labels and annotations
   ## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
@@ -286,21 +258,19 @@ master:
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
     ##
     # nodePort:
-    # nodePort: 32666
 
     ## Provide any additional annotations which may be required. This can be used to
     ## set the LoadBalancer service type to internal only.
     ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
     ##
-    annotations:
-      service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+    annotations: {}
     loadBalancerIP:
 
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
   ##
   persistence:
-    enabled: false 
+    enabled: true
     ## The path the volume will be mounted at, useful when using different
     ## Redis images.
     path: /data
@@ -330,6 +300,7 @@ master:
   ## Redis Master pod priorityClassName
   # priorityClassName: {}
 
+
 ##
 ## Redis Slave properties
 ## Note: service.type is a mandatory parameter
@@ -356,19 +327,16 @@ slave:
 
   ## Redis slave port
   port: 6379
+
   ## Can be used to specify command line arguments, for example:
   ##
   command: "/run.sh"
-  ## Additional Redis configuration for the slave nodes
-  ## ref: https://redis.io/topics/config
-  ##
-  configmap:
   ## Redis extra flags
   extraFlags: []
   ## List of Redis commands to disable
   disableCommands:
-  # - FLUSHDB
-  # - FLUSHALL
+  - FLUSHDB
+  - FLUSHALL
 
   ## Redis Slave pod/node affinity/anti-affinity
   ##
@@ -397,22 +365,6 @@ slave:
   #   requests:
   #     memory: 256Mi
   #     cpu: 100m
-
-  ## Redis slave selectors and tolerations for pod assignment
-  # nodeSelector: {"beta.kubernetes.io/arch": "amd64"}
-  # tolerations: []
-
-  ## Use an alternate scheduler, e.g. "stork".
-  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
-  ##
-  # schedulerName:
-
-  ## Redis slave pod Annotation and Labels
-  podLabels: {}
-  podAnnotations: {}
-
-  ## Redis slave pod priorityClassName
-  # priorityClassName: {}
 
   ## Enable persistence using Persistent Volume Claims
   ## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
@@ -445,15 +397,31 @@ slave:
     ## https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#partitions
     # rollingUpdatePartition:
 
+  ## Redis slave selectors and tolerations for pod assignment
+  # nodeSelector: {"beta.kubernetes.io/arch": "amd64"}
+  # tolerations: []
+
+  ## Use an alternate scheduler, e.g. "stork".
+  ## ref: https://kubernetes.io/docs/tasks/administer-cluster/configure-multiple-schedulers/
+  ##
+  # schedulerName:
+
+  ## Redis slave pod Annotation and Labels
+  podLabels: {}
+  podAnnotations: {}
+
+  ## Redis slave pod priorityClassName
+  # priorityClassName: {}
+
 ## Prometheus Exporter / Metrics
 ##
 metrics:
-  enabled: false
+  enabled: true
 
   image:
     registry: docker.io
     repository: bitnami/redis-exporter
-    tag: 1.1.1-debian-9-r13
+    tag: 1.0.3-debian-9-r0
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
@@ -461,6 +429,7 @@ metrics:
     ##
     # pullSecrets:
     #   - myRegistryKeySecretName
+
   ## Metrics exporter resource requests and limits
   ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
   ##
@@ -470,6 +439,14 @@ metrics:
   ## extraArgs:
   ##   check-keys: myKey,myOtherKey
   # extraArgs: {}
+  ## Metrics exporter pod priorityClassName
+  # priorityClassName: {}
+  service:
+    type: ClusterIP
+    ## Use serviceLoadBalancerIP to request a specific static IP,
+    ## otherwise leave blank
+    # loadBalancerIP:
+    annotations: {}
 
   ## Metrics exporter pod Annotation and Labels
   podAnnotations:
@@ -489,15 +466,6 @@ metrics:
     ## [Kube Prometheus Selector Label](https://github.com/helm/charts/tree/master/stable/prometheus-operator#exporters)
     selector:
       prometheus: kube-prometheus
-
-  ## Metrics exporter pod priorityClassName
-  # priorityClassName: {}
-  service:
-    type: ClusterIP
-    ## Use serviceLoadBalancerIP to request a specific static IP,
-    ## otherwise leave blank
-    # loadBalancerIP:
-    annotations: {}
 
 ##
 ## Init containers parameters:
@@ -526,10 +494,7 @@ volumePermissions:
 ## ref: https://redis.io/topics/config
 ##
 configmap: |-
-  # Enable AOF https://redis.io/topics/persistence#append-only-file
-  appendonly yes
-  # Disable RDB persistence, AOF persistence already enabled.
-  save ""
+  # maxmemory-policy volatile-lru
 
 ## Sysctl InitContainer
 ## used to perform sysctl operation to modify Kernel settings (needed sometimes to avoid warnings)
@@ -552,123 +517,3 @@ sysctlImage:
   #   requests:
   #     memory: 128Mi
   #     cpu: 100m
-
-
-ingress:
-  enabled: false
-  # Used to create an Ingress record.
-  hosts:
-    - name: 
-      # default paths for "/" and "/*" will be added
-      path: /
-
-  annotations: {}
-    # kubernetes.io/ingress.class: "nginx"
-
-#  tls:
-#  # Secrets must be manually created in the namespace.
-#  - secretName: letsencrypt-redis
-#    hosts:
-#      - redis.dev.epac.apps.thalesdigital.io
-
-##
-##stunnel-redis
-##
-
-imageStunnel:
-  repository: acidozik/redis-tls
-
-ssl:
-  secret: stunnel-ssl-certs
-  certificates:
-    cert: |-
-      -----BEGIN CERTIFICATE-----
-      MIIFQTCCAymgAwIBAgIJAIV0mQbVXTgjMA0GCSqGSIb3DQEBCwUAMH8xCzAJBgNV
-      BAYTAkNBMQ8wDQYDVQQIDAZRdWViZWMxETAPBgNVBAcMCE1vbnRyZWFsMQwwCgYD
-      VQQKDANUREYxDzANBgNVBAsMBkRldk9wczEtMCsGA1UEAwwkcmVkaXMtbWFzdGVy
-      LnJlZGlzLnN2Yy5jbHVzdGVyLmxvY2FsMB4XDTIwMDIwNDE0NTQ1M1oXDTMwMDIw
-      MTE0NTQ1M1owLDEqMCgGA1UEAwwhRGFuaWVsLUJlcnViZW5zLU1hY0Jvb2stUHJv
-      LmxvY2FsMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAwImz7NdKyGqi
-      4K/NFo5lR85UkLDSCMnZM142NdaabFlVvD9Uwi+7PVSDZCBwR34Hb8Gt7lRj87xn
-      Y49tZjv+nszqjtt66RSFBD6Z6AtUKnh9FUq9FQG2bRrjXd0Ea4X1Lc39d0lrTrn8
-      Dn5P8gmF9t0qsiWtoAbg+hi2jhA0piMDTLHJYBAauZp/zFb2VNjSoLJKWU2Z9a4r
-      sJecphhB+cniiNMbwmvsC3Gc9TMuz7zust/sS2NvtpWjtgy25zuy4HXgzXflGUsL
-      QlK+3IfLt3wIW/Z0wl2NLPUfqICbxwkvXW2Z2QX7j2blXkt3AkcaeVD2AQhsY4mA
-      ebuxnlCNQN2tJvDOX80qt54iggl9jBj/ihXlCLuL+ut1kvhOKmNQ63ZQr4/YhcWs
-      jGQ0IUudOcsy8aPuoIs2pslTNvv8PvjhzLXmD5UwD8Z4JeaQ8QZBwgvY4kxzgBqb
-      3yOmd5F+7yVUjXknE0eV5yliVCjR/cXDqfM8r2YBvZDCratfalkZ2kQe8E929Z6s
-      RIoJ0A5WSXnmrzeiC3Z0asWw9hdvdwFY/i8pVYX2AxsvqcoE4wGD1zW4uU17gBp3
-      vnpcRQRHSFG2wzirco+6vidJZW4JWf0xEEL1W8Zgxmh7Ttz3Nglj1UuYlDY+qzd/
-      EegOuCA1sZMxxdXurjDM/Cm6cy00CoUCAwEAAaMTMBEwDwYDVR0RBAgwBocEfwAA
-      ATANBgkqhkiG9w0BAQsFAAOCAgEAM/n9aSFEDAZwvJ2ONSrUs196fWrUjb/74aO1
-      NEEAXGCxUVXyNoxx6pi/USsQowEBYoAz37HYJ406zxdMZNRSAlS5bv1SEf6M8dqX
-      I6JzRHm5iPETbQ11sQZNCtiiPIpCb0JDqReCMu3wwd1zHsZzN+qn4sa18cd8b1By
-      T0vtvjkiQ+viKIfwOjoOg+WzXz4sO37hRcwA8ugfe46EDfN+bu3SaBJneMsJccOG
-      tIa3QGTs56kJLKgYpvpZ2ZEszXMxUY+tACqClh2b/Al97D/ZIayX58j74SeRyrGf
-      9qVXp028C0plgp8woeyLZsEOLD1kGL/HwOPD8A9MO5uy9sbKyFc+q6ZruZZVqB7b
-      2vNec2y4i2LEDjX+xkVjTgfyl7H2nsUR+JxPEKHlZpc64BhR+0AbU2LRLxvL68Jd
-      vW5PDdeB6f1AFSNdVl5BUB210pFcGK1XMBz/EwbnMOojvpIE+eHdb8ayfmYBU+ah
-      jWkmtSl9cwM8W9pFxecFXiFWfoawi4PcFTAByCHPIOn2gCzG2G+MQfvRxjWiXkJ/
-      srIfykHh7wrIYfK/7ZcFOkzC9Gi7HKD0H9rHTrOrhnlHVaCWN7Z5f0cTw3xRzE2v
-      e9dyI+M6XWy2V877ESjWeIJL8BqAy6wTAdzRN3CdNaFCQ9UAfjuPnKyOW4w7Jbkr
-      ZSZkgP0=
-      -----END CERTIFICATE-----
-
-    key: |-
-      -----BEGIN RSA PRIVATE KEY-----
-      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
-      -----END RSA PRIVATE KEY-----
-
-config:
-  listen: 0.0.0.0
-  portListen: 6379
-  connect: 0.0.0.0
-  portConnect: 6380
