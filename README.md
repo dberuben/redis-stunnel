@@ -149,6 +149,8 @@ config:
 
 ```
 
+stunnel configmap : `configmap-stunnel.yaml`
+
 The following table lists the configurable parameters of the Redis chart and their default values.
 
 | Parameter                                     | Description                                                                                                                                         | Default                                                 |
