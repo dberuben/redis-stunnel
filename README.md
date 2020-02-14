@@ -120,6 +120,14 @@ kubectl patch deployments my-release-redis-metrics --type=json -p='[{"op": "remo
 
 ## Configuration
 
+##
+## Stunnel Configuration proxy
+## https://www.stunnel.org/
+
+```
+stunnel:
+  enabled: true
+```
 The following table lists the configurable parameters of the Redis chart and their default values.
 
 | Parameter                                     | Description                                                                                                                                         | Default                                                 |
