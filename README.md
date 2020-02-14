@@ -127,7 +127,28 @@ kubectl patch deployments my-release-redis-metrics --type=json -p='[{"op": "remo
 ```
 stunnel:
   enabled: true
+
+ssl:
+  secret: stunnel-ssl-certs
+  certificates:
+    cert: |-
+      -----BEGIN CERTIFICATE-----
+      -----END CERTIFICATE-----
+
+    key: |-
+      -----BEGIN RSA PRIVATE KEY-----
+      -----END RSA PRIVATE KEY-----
+
+config:
+  # Stunnel listen
+  listen: 0.0.0.0
+  portListen: 6379
+  # Stunnel redirection to redis in local
+  connect: 0.0.0.0
+  portConnect: 6380
+
 ```
+
 The following table lists the configurable parameters of the Redis chart and their default values.
 
 | Parameter                                     | Description                                                                                                                                         | Default                                                 |
